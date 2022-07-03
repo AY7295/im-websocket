@@ -1,0 +1,17 @@
+syntax = "proto3";
+package proto;
+
+message StringWrap {
+    string val = 1;
+}
+
+message BoolWrap {
+    bool val = 1;
+}
+message Empty {
+
+}
+
+message StringListWrap {
+    repeated string val = 1;
+}
