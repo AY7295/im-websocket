@@ -2,15 +2,17 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"webSocket-be/model"
 )
 
-func NewRouter(h *Handler) *gin.Engine {
-	gin.SetMode(h.Config.GinMode)
+func NewRouter(m *model.ClientManager) *gin.Engine {
+	gin.SetMode(viper.GetString("utils.gin_mode"))
 	e := gin.Default()
 
 	e.GET("/ping", pong)
 
-	e.GET("chat/ws", h.WS)
+	e.GET("chat/ws", m.WS)
 
 	return e
 }

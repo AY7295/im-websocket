@@ -1,31 +1,52 @@
 package main
 
 import (
+	"github.com/spf13/viper"
 	"log"
+	"webSocket-be/model"
 	"webSocket-be/route"
 	"webSocket-be/service"
 )
 
 func main() {
 
-	h, err := route.NewHandler("config/config.json")
-	if err != nil {
-		log.Println(err.Error())
-		panic(err)
-	}
-	err = service.InitGRPC(h.Config)
+	err := Init()
 	if err != nil {
 		log.Println(err.Error())
 		panic(err)
 	}
 
-	go h.Manager.Start()
+	m := model.NewManager()
 
-	e := route.NewRouter(h)
+	go m.Start()
 
-	err = e.Run(h.Config.HttpPort)
+	err = route.NewRouter(m).Run(viper.GetString("utils.httpPort"))
 	if err != nil {
 		return
 	}
+
+}
+
+func Init() error {
+	viper.SetConfigName("config.json")
+	viper.AddConfigPath("config")
+	err := viper.ReadInConfig()
+	if err != nil {
+		return err
+	}
+
+	err = service.InitGRPC()
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	_, err = model.InitRedis()
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
 
 }

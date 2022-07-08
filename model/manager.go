@@ -2,8 +2,10 @@ package model
 
 import (
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"log"
 	"sync"
+	"webSocket-be/service"
 )
 
 type ClientManager struct {
@@ -16,9 +18,32 @@ type ClientManager struct {
 	Unregister chan *Client
 }
 
-type Broadcast struct {
-	Client  *Client
-	Message DialogMessage
+func NewManager() *ClientManager {
+	return &ClientManager{
+		Clients:    make(map[string]*Client),
+		Broadcast:  make(chan *Broadcast),
+		Reply:      make(chan *Client),
+		Register:   make(chan *Client),
+		Unregister: make(chan *Client),
+	}
+
+}
+
+func (manager *ClientManager) WS(c *gin.Context) {
+
+	token := c.GetHeader("Authorization")
+
+	client, err := service.VerifyRequest(token, c)
+	if err != nil {
+		service.ErrorResponse(c, err.Error())
+		return
+	}
+
+	manager.Register <- client
+
+	go client.Read(manager)
+	go client.Write(manager)
+
 }
 
 func (manager *ClientManager) Start() {
