@@ -1,0 +1,35 @@
+{
+  "platform": [
+    "ios",
+    "android"
+  ],
+  "audience": {
+    "alias": [
+      "学号1",
+      "学号2"
+    ]
+  },
+  "options": {
+    "apns_production": false
+  },
+  "notification": {
+    "android": {
+      "alert": "android alert content",
+      "title": "android title",
+      "extras": {
+        "key1": "value1",
+        "key2": "value2"
+      }
+    },
+    "ios": {
+      "alert": {
+        "title": "ios title",
+        "body": "ios body"
+      },
+      "extras": {
+        "key1": "value1",
+        "key2": "value2"
+      }
+    }
+  }
+}

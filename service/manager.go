@@ -8,7 +8,7 @@ import (
 )
 
 type ClientManager struct {
-	*sync.RWMutex
+	//*sync.RWMutex
 	Clients    map[string]*Client
 	Broadcast  chan *Broadcast
 	Reply      chan *Client

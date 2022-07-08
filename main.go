@@ -16,7 +16,7 @@ func main() {
 		panic(err)
 	}
 
-	m := model.NewManager()
+	m := service.NewManager()
 
 	go m.Start()
 
@@ -28,7 +28,7 @@ func main() {
 }
 
 func Init() error {
-	viper.SetConfigName("config.json")
+	viper.SetConfigType("json")
 	viper.AddConfigPath("config")
 	err := viper.ReadInConfig()
 	if err != nil {
