@@ -41,7 +41,7 @@ func Init() error {
 		return err
 	}
 
-	_, err = model.InitRedis()
+	err = model.InitRedis()
 	if err != nil {
 		log.Println(err.Error())
 		return err

@@ -1,4 +1,4 @@
-package model
+package service
 
 import (
 	"encoding/json"
@@ -80,9 +80,17 @@ func (manager *ClientManager) Start() {
 			}
 
 			if !online {
-				manager.Unread[ToId] = append(manager.Unread[ToId], broadcast.Message)
+				err = model.ZAddWithContext(ToId, broadcast.Message)
+				if err != nil {
+					log.Println("ZAddWithContext error:", err)
+					return
+				}
+				err = model.NewJPush(broadcast.Message.User.Name, broadcast.Message.Text, []string{broadcast.Message.User.Id}).POST()
+				if err != nil {
+					log.Println("JPush error:", err)
+				}
 			}
-			//manager.Unlock() // 解锁
+
 		}
 	}
 }
