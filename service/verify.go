@@ -9,19 +9,12 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 	"log"
+	"time"
 	"webSocket-be/model"
 	"webSocket-be/proto"
 )
 
-var userClient proto.UserClient
-var ctx context.Context
-
-func InitGRPC() error {
-
-	ctx = metadata.NewOutgoingContext(context.Background(), metadata.New(map[string]string{
-		"app-id":     viper.GetString("grpc.app_id"),
-		"app-secret": viper.GetString("grpc.app_secret"),
-	}))
+func verifyToken(token string) (*model.User, error) {
 
 	addr := flag.String(viper.GetString("grpc.name"), viper.GetString("grpc.address"), viper.GetString("grpc.usage"))
 	flag.Parse()
@@ -30,7 +23,7 @@ func InitGRPC() error {
 		InsecureSkipVerify: true,
 	})))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func(conn *grpc.ClientConn) {
 		err = conn.Close()
@@ -39,17 +32,21 @@ func InitGRPC() error {
 			return
 		}
 	}(conn)
-	userClient = proto.NewUserClient(conn)
+	userClient := proto.NewUserClient(conn)
 
-	return nil
-}
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(map[string]string{
+		"app-id":     viper.GetString("grpc.app_id"),
+		"app-secret": viper.GetString("grpc.app_secret"),
+	}))
 
-func verifyToken(token string) (*model.User, error) {
+	ctx1, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	stringWrap := &proto.StringWrap{Val: token}
-	user, err := userClient.VerifyToken(ctx, stringWrap)
+	user, err := userClient.VerifyToken(ctx1, stringWrap)
 	if err != nil {
-		return nil, err
+		log.Println("grpc verify token err: " + err.Error())
+		return GetUserByToken(token)
 	}
 
 	return &model.User{

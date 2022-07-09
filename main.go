@@ -35,12 +35,6 @@ func Init() error {
 		return err
 	}
 
-	err = service.InitGRPC()
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-
 	err = model.InitRedis()
 	if err != nil {
 		log.Println(err.Error())

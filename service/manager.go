@@ -28,6 +28,9 @@ func NewManager() *ClientManager {
 func (manager *ClientManager) WS(c *gin.Context) {
 
 	token := c.GetHeader("Authorization")
+	if token == "" {
+		ErrorResponse(c, "token is empty")
+	}
 
 	client, err := VerifyRequest(token, c)
 	if err != nil {
