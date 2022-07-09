@@ -50,3 +50,20 @@ func Init() error {
 	return nil
 
 }
+
+//test for JPush
+
+//broadcast := &service.Broadcast{
+//	Message: model.DialogMessage{
+//		Text: "test for content",
+//		User: model.User{
+//			Id:   "8008121377",
+//			Name: "yzx",
+//		},
+//	},
+//}
+//
+//err = model.NewJPush(broadcast.Message.User.Name, broadcast.Message.Text, []string{broadcast.Message.User.Id}).POST()
+//if err != nil {
+//	log.Println("JPush error:", err)
+//}

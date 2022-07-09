@@ -57,16 +57,20 @@ func NewJPush(title, msg string, ids []string, m ...map[string]string) *JPush {
 
 	j.Audience.Alias = ids
 
-	j.Options.ApnsProduction = viper.GetBool("j_push.apns_production")
+	j.Options.ApnsProduction = viper.GetBool("j_push.is_production_env")
 
 	j.Notification.Android.Title = fmt.Sprintf(titleFormat, title)
 	j.Notification.Android.Alert = fmt.Sprintf(msgFormat, msg)
 	j.Notification.Ios.IAlert.Title = fmt.Sprintf(titleFormat, title)
 	j.Notification.Ios.IAlert.Body = fmt.Sprintf(msgFormat, msg)
-	if len(m) > 0 {
-		j.Notification.Android.Extras = m[0]
-		j.Notification.Ios.Extras = m[0]
+	if len(m) < 1 {
+		j.Notification.Android.Extras = make(map[string]string)
+		j.Notification.Ios.Extras = make(map[string]string)
+		return j
 	}
+
+	j.Notification.Android.Extras = m[0]
+	j.Notification.Ios.Extras = m[0]
 
 	return j
 }
