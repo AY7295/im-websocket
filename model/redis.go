@@ -4,6 +4,7 @@ import (
 	"context"
 	redis "github.com/go-redis/redis/v9"
 	"github.com/spf13/viper"
+	"log"
 	"time"
 )
 
@@ -20,14 +21,18 @@ func InitRedis() error {
 		PoolSize:    viper.GetInt("redis.pool_size"),
 	})
 
-	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	//defer cancel()
-	//
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	//errs, err := redisDB.Ping(ctx).Result()
 	//if err != nil {
 	//	log.Println(errs)
 	//	return err
 	//}
+
+	redisDB.Set(ctx, "test", "test", 10000*time.Second)
+	log.Println(redisDB.Get(ctx, "test").Result())
+
 	return nil
 }
 

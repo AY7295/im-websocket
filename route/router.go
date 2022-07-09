@@ -12,7 +12,7 @@ func NewRouter(m *service.ClientManager) *gin.Engine {
 
 	e.GET("/ping", pong)
 
-	e.GET("chat/ws", m.WS)
+	e.GET("chat", m.WS)
 
 	return e
 }
