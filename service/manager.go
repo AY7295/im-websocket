@@ -11,7 +11,6 @@ type ClientManager struct {
 	//*sync.RWMutex
 	Clients    map[string]*Client
 	Broadcast  chan *Broadcast
-	Reply      chan *Client
 	Register   chan *Client
 	Unregister chan *Client
 }
@@ -20,7 +19,6 @@ func NewManager() *ClientManager {
 	return &ClientManager{
 		Clients:    make(map[string]*Client),
 		Broadcast:  make(chan *Broadcast),
-		Reply:      make(chan *Client),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 	}
@@ -83,7 +81,6 @@ func (manager *ClientManager) Start() {
 				err = model.ZAddWithContext(ToId, broadcast.Message)
 				if err != nil {
 					log.Println("ZAddWithContext error:", err)
-					return
 				}
 				err = model.NewJPush(broadcast.Message.User.Name, broadcast.Message.Text, []string{broadcast.Message.User.Id}).POST()
 				if err != nil {
