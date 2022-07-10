@@ -14,7 +14,7 @@ import (
 	"webSocket-be/proto"
 )
 
-func verifyToken(token string) (*model.User, error) {
+func VerifyToken(token string) (*model.User, error) {
 
 	addr := flag.String(viper.GetString("grpc.name"), viper.GetString("grpc.address"), viper.GetString("grpc.usage"))
 	flag.Parse()

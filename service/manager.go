@@ -62,8 +62,6 @@ func (manager *ClientManager) Start() {
 			}
 
 		case broadcast := <-manager.Broadcast:
-			ToId := broadcast.Message.User.Id
-			online := false
 
 			message, err := json.Marshal(broadcast.Message)
 			if err != nil {
@@ -71,9 +69,10 @@ func (manager *ClientManager) Start() {
 				continue
 			}
 
+			online := false
 			// 在 当前对话框 直接发送()
 			for id, client := range manager.Clients {
-				if id != ToId {
+				if id != broadcast.Message.User.Id {
 					continue
 				}
 				client.Text <- message
@@ -81,7 +80,7 @@ func (manager *ClientManager) Start() {
 			}
 
 			if !online {
-				err = model.ZAddWithContext(ToId, broadcast.Message)
+				err = model.ZAddWithContext(broadcast.Message.User.Id, broadcast.Message)
 				if err != nil {
 					log.Println("ZAddWithContext error:", err)
 				}

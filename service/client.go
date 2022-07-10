@@ -33,11 +33,7 @@ func (c *Client) Write(manager *ClientManager) {
 	for {
 		_, msg, err := c.Socket.ReadMessage()
 		if err != nil {
-			err = c.Socket.WriteMessage(websocket.CloseMessage, []byte("读取消息错误"))
-			if err != nil {
-				log.Println("发送消息错误:", err)
-				return
-			}
+			log.Println("ID: "+c.User.Id+"	读取消息错误:", err)
 			return
 		}
 
@@ -45,7 +41,6 @@ func (c *Client) Write(manager *ClientManager) {
 		err = json.Unmarshal(msg, &message)
 		if err != nil {
 			log.Println("发送消息错误:", err)
-			msg = []byte("解析消息错误")
 			return
 		}
 		manager.Broadcast <- &Broadcast{

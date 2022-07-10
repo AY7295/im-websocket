@@ -4,7 +4,6 @@ import (
 	"context"
 	redis "github.com/go-redis/redis/v9"
 	"github.com/spf13/viper"
-	"log"
 	"time"
 )
 
@@ -24,10 +23,10 @@ func InitRedis() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	redisDB.Set(ctx, "test", "test", 10000*time.Second)
-	log.Println(redisDB.Get(ctx, "test").Result())
+	redisDB.Set(ctx, "test", "test", 10*time.Second)
+	_, err := redisDB.Get(ctx, "test").Result()
 
-	return nil
+	return err
 }
 
 func ZAddWithContext(id string, msg DialogMessage) error {
@@ -35,10 +34,7 @@ func ZAddWithContext(id string, msg DialogMessage) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_, err := redisDB.ZAdd(ctx, id, redis.Z{Score: float64(msg.CreatedAt.Unix()), Member: msg}).Result()
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 
 }
 

@@ -3,23 +3,21 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	io "io"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"webSocket-be/model"
 )
 
+var (
+	url    = "https://os.ncuos.com/api/user/profile/basic"
+	method = "GET"
+)
+
 func GetUserByToken(token string) (*model.User, error) {
-	url := "https://os.ncuos.com/api/user/profile/basic"
-	method := "GET"
 
-	payload := strings.NewReader(``)
-
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
-
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -27,7 +25,7 @@ func GetUserByToken(token string) (*model.User, error) {
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Authorization", "passport "+token)
 
-	res, err := client.Do(req)
+	res, err := (&http.Client{}).Do(req)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -51,10 +49,9 @@ func GetUserByToken(token string) (*model.User, error) {
 		fmt.Println("json unmarshal error:", err)
 	}
 
-	user := &model.User{
+	return &model.User{
 		Id:   data["base_info"].(map[string]interface{})["xh"].(string),
 		Name: data["base_info"].(map[string]interface{})["xm"].(string),
-	}
+	}, nil
 
-	return user, nil
 }

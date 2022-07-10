@@ -8,28 +8,25 @@ import (
 
 func VerifyRequest(token string, c *gin.Context) (*Client, error) {
 
-	user, err := verifyToken(token)
+	user, err := VerifyToken(token)
 	if err != nil {
 		return nil, err
 	}
 
 	conn, err := (&websocket.Upgrader{
-		CheckOrigin: checkOrigin, // 允许跨域
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
 	}).Upgrade(c.Writer, c.Request, nil) // 升级成ws协议
 	if err != nil {
+		http.NotFound(c.Writer, c.Request)
 		return nil, err
 	}
 
-	client := &Client{
+	return &Client{
 		Socket: conn,
 		Text:   make(chan []byte),
 		User:   *user,
-	}
+	}, nil
 
-	return client, nil
-}
-
-func checkOrigin(r *http.Request) bool {
-
-	return true
 }
