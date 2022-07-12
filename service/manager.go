@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"log"
+	"sync"
 	"webSocket-be/model"
 )
 
 type ClientManager struct {
-	//*sync.RWMutex
-	Clients    map[string]*Client
+	Hubs       *sync.Map
 	Broadcast  chan *Broadcast
 	Register   chan *Client
 	Unregister chan *Client
@@ -17,7 +17,7 @@ type ClientManager struct {
 
 func NewManager() *ClientManager {
 	return &ClientManager{
-		Clients:    make(map[string]*Client),
+		Hubs:       &sync.Map{},
 		Broadcast:  make(chan *Broadcast),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
@@ -50,35 +50,33 @@ func (manager *ClientManager) Start() {
 		select {
 		case client := <-manager.Register:
 
-			manager.Clients[client.User.Id] = client
+			manager.Hubs.Store(client.User.Id, client)
 
 		case client := <-manager.Unregister:
 
-			_, ok := manager.Clients[client.User.Id]
-
-			if ok {
+			if _, ok := manager.Hubs.Load(client.User.Id); ok {
+				manager.Hubs.Delete(client.User.Id)
 				close(client.Text)
-				delete(manager.Clients, client.User.Id)
+			} else {
+				log.Println(client.User.Id + " is not exist in Hubs, delete failed")
 			}
 
 		case broadcast := <-manager.Broadcast:
 
 			message, err := json.Marshal(broadcast.Message)
 			if err != nil {
-				log.Println("json.Marshal error:", err)
+				log.Println(broadcast.Client.User.Id+" json.Marshal error:", err)
 				continue
 			}
 
 			online := false
-			// 在 当前对话框 直接发送()
-			for id, client := range manager.Clients {
-				if id != broadcast.Message.User.Id {
-					continue
-				}
-				client.Text <- message
+			// descp 在 当前对话框 直接发送
+			if v, ok := manager.Hubs.Load(broadcast.Message.User.Id); ok {
+				v.(Client).Text <- message
 				online = true
 			}
 
+			// descp 不在 当前对话框 极光推送
 			if !online {
 				err = model.ZAddWithContext(broadcast.Message.User.Id, broadcast.Message)
 				if err != nil {
