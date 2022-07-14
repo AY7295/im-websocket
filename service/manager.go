@@ -31,6 +31,7 @@ func (manager *ClientManager) WS(c *gin.Context) {
 	token := c.GetHeader("Authorization")
 	if token == "" || receiverId == "" {
 		ErrorResponse(c, "receiverId or token is empty")
+		return
 	}
 
 	client, err := VerifyRequest(receiverId, token, c)
@@ -59,7 +60,7 @@ func (manager *ClientManager) Start() {
 				manager.Hubs.Delete(client.User.Id)
 				err := client.Socket.Close()
 				if err != nil {
-					log.Println("关闭 socket 连接错误:", err)
+					log.Println("关闭 socket 连接错误: ", err)
 				}
 				close(client.Text)
 			}
@@ -68,7 +69,7 @@ func (manager *ClientManager) Start() {
 
 			message, err := json.Marshal(broadcast.Message)
 			if err != nil {
-				log.Println(broadcast.Client.User.Id+" json.Marshal error:", err)
+				log.Println(broadcast.Client.User.Id+" json.Marshal error: ", err)
 				continue
 			}
 
@@ -83,11 +84,11 @@ func (manager *ClientManager) Start() {
 			if !online {
 				err = model.ZAddWithContext(broadcast.Client.ReceiverId, broadcast.Message)
 				if err != nil {
-					log.Println("ZAddWithContext error:", err)
+					log.Println("ZAddWithContext error: ", err)
 				}
 				err = model.NewJPush(broadcast.Message.User.Name, broadcast.Message.Text, []string{broadcast.Client.ReceiverId}).POST()
 				if err != nil {
-					log.Println("JPush error:", err)
+					log.Println("JPush error: ", err)
 				}
 			}
 

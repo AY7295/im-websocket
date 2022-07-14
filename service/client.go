@@ -22,7 +22,7 @@ func (c *Client) Read(manager *ClientManager) {
 		case message := <-c.Text:
 			err := c.Socket.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
-				log.Println("发送消息错误:", err)
+				log.Println("发送消息错误: ", err)
 				return
 			}
 		}
@@ -34,7 +34,7 @@ func (c *Client) Write(manager *ClientManager) {
 	for {
 		_, msg, err := c.Socket.ReadMessage()
 		if err != nil {
-			log.Println("读取消息错误:", err)
+			log.Println("读取消息错误: ", err)
 			return
 		}
 
