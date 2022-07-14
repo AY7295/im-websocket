@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 	"log"
-	"time"
 	"webSocket-be/model"
 	"webSocket-be/proto"
 )
@@ -39,11 +38,8 @@ func VerifyToken(token string) (*model.User, error) {
 		"app-secret": viper.GetString("grpc.app_secret"),
 	}))
 
-	ctx1, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
 	stringWrap := &proto.StringWrap{Val: token}
-	user, err := userClient.VerifyToken(ctx1, stringWrap)
+	user, err := userClient.VerifyToken(ctx, stringWrap)
 	if err != nil {
 		log.Println("grpc verify token err: " + err.Error())
 		return GetUserByToken(token)

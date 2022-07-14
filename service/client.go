@@ -8,9 +8,10 @@ import (
 )
 
 type Client struct {
-	Socket *websocket.Conn
-	Text   chan []byte
-	User   model.User // 发送者信息
+	Socket     *websocket.Conn
+	Text       chan []byte
+	User       model.User // 发送者信息
+	ReceiverId string     // 接收者id
 }
 
 func (c *Client) Read(manager *ClientManager) {
@@ -33,14 +34,14 @@ func (c *Client) Write(manager *ClientManager) {
 	for {
 		_, msg, err := c.Socket.ReadMessage()
 		if err != nil {
-			log.Println("ID: "+c.User.Id+"	读取消息错误:", err)
+			log.Println("读取消息错误:", err)
 			return
 		}
 
 		message := model.DialogMessage{}
 		err = json.Unmarshal(msg, &message)
 		if err != nil {
-			log.Println("发送消息错误:", err)
+			log.Println("反序列化消息失败: ", err)
 			return
 		}
 		manager.Broadcast <- &Broadcast{
@@ -52,8 +53,4 @@ func (c *Client) Write(manager *ClientManager) {
 
 func (c *Client) Unregister(manager *ClientManager) {
 	manager.Unregister <- c
-	err := c.Socket.Close()
-	if err != nil {
-		log.Println("ID: "+c.User.Id+"	关闭连接错误:", err)
-	}
 }

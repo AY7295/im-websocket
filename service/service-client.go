@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func VerifyRequest(token string, c *gin.Context) (*Client, error) {
+func VerifyRequest(receiverId, token string, c *gin.Context) (*Client, error) {
 
 	user, err := VerifyToken(token)
 	if err != nil {
@@ -24,9 +24,10 @@ func VerifyRequest(token string, c *gin.Context) (*Client, error) {
 	}
 
 	return &Client{
-		Socket: conn,
-		Text:   make(chan []byte),
-		User:   *user,
+		Socket:     conn,
+		Text:       make(chan []byte),
+		User:       *user,
+		ReceiverId: receiverId,
 	}, nil
 
 }

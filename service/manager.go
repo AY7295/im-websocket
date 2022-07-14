@@ -27,12 +27,13 @@ func NewManager() *ClientManager {
 
 func (manager *ClientManager) WS(c *gin.Context) {
 
+	receiverId := c.Query("receiver")
 	token := c.GetHeader("Authorization")
-	if token == "" {
-		ErrorResponse(c, "token is empty")
+	if token == "" || receiverId == "" {
+		ErrorResponse(c, "receiverId or token is empty")
 	}
 
-	client, err := VerifyRequest(token, c)
+	client, err := VerifyRequest(receiverId, token, c)
 	if err != nil {
 		ErrorResponse(c, err.Error())
 		return
@@ -56,9 +57,11 @@ func (manager *ClientManager) Start() {
 
 			if _, ok := manager.Hubs.Load(client.User.Id); ok {
 				manager.Hubs.Delete(client.User.Id)
+				err := client.Socket.Close()
+				if err != nil {
+					log.Println("关闭 socket 连接错误:", err)
+				}
 				close(client.Text)
-			} else {
-				log.Println(client.User.Id + " is not exist in Hubs, delete failed")
 			}
 
 		case broadcast := <-manager.Broadcast:
@@ -71,18 +74,18 @@ func (manager *ClientManager) Start() {
 
 			online := false
 			// descp 在 当前对话框 直接发送
-			if v, ok := manager.Hubs.Load(broadcast.Message.User.Id); ok {
-				v.(Client).Text <- message
+			if v, ok := manager.Hubs.Load(broadcast.Client.ReceiverId); ok {
+				v.(*Client).Text <- message
 				online = true
 			}
 
 			// descp 不在 当前对话框 极光推送
 			if !online {
-				err = model.ZAddWithContext(broadcast.Message.User.Id, broadcast.Message)
+				err = model.ZAddWithContext(broadcast.Client.ReceiverId, broadcast.Message)
 				if err != nil {
 					log.Println("ZAddWithContext error:", err)
 				}
-				err = model.NewJPush(broadcast.Message.User.Name, broadcast.Message.Text, []string{broadcast.Message.User.Id}).POST()
+				err = model.NewJPush(broadcast.Message.User.Name, broadcast.Message.Text, []string{broadcast.Client.ReceiverId}).POST()
 				if err != nil {
 					log.Println("JPush error:", err)
 				}
