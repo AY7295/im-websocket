@@ -1,8 +1,7 @@
 package service
 
 import (
-	"encoding/json"
-	"fmt"
+	"github.com/tidwall/gjson"
 	"io"
 	"io/ioutil"
 	"log"
@@ -43,15 +42,9 @@ func GetUserByToken(token string) (*model.User, error) {
 		return nil, err
 	}
 
-	var data map[string]interface{}
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		fmt.Println("json unmarshal error:", err)
-	}
-
 	return &model.User{
-		Id:   data["base_info"].(map[string]interface{})["xh"].(string),
-		Name: data["base_info"].(map[string]interface{})["xm"].(string),
+		Id:   gjson.Get(string(body), "base_info.xh").Str,
+		Name: gjson.Get(string(body), "base_info.xm").Str,
 	}, nil
 
 }

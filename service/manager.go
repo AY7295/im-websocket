@@ -75,7 +75,7 @@ func (manager *ClientManager) Start() {
 
 			online := false
 			// descp 在 当前对话框 直接发送
-			if v, ok := manager.Hubs.Load(broadcast.Client.ReceiverId); ok {
+			if v, ok := manager.Hubs.Load(broadcast.Client.ReceiverId); ok && v.(*Client).ReceiverId == broadcast.Client.User.Id {
 				v.(*Client).Text <- message
 				online = true
 			}
