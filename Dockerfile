@@ -12,7 +12,7 @@ WORKDIR /go/ws
 
 RUN go build -ldflags '-extldflags "-static"' main.go
 
-RUN mkdir app && mv main app/main && mkdir app/config && mv config/config.json app/config/config.json
+RUN mkdir app && mv main app/main && mkdir app/config && mv config/* app/config/
 
 FROM alpine:latest
 
