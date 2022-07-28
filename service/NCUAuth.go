@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/tidwall/gjson"
 	"io"
 	"io/ioutil"
@@ -34,10 +35,15 @@ func GetUserByToken(token string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	bodyStr := string(body)
 
-	return &model.User{
-		Id:   gjson.Get(string(body), "base_info.xh").Str,
-		Name: gjson.Get(string(body), "base_info.xm").Str,
-	}, nil
+	user := &model.User{
+		Id:   gjson.Get(bodyStr, "base_info.xh").String(),
+		Name: gjson.Get(bodyStr, "base_info.xm").String(),
+	}
 
+	if user.Name == "" || user.Id == "" {
+		return nil, errors.New(bodyStr)
+	}
+	return user, nil
 }
