@@ -15,10 +15,7 @@ import (
 
 func VerifyToken(token string) (*model.User, error) {
 
-	addr := flag.String(viper.GetString("grpc.name"), viper.GetString("grpc.address"), viper.GetString("grpc.usage"))
-	flag.Parse()
-
-	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+	conn, err := grpc.Dial(viper.GetString("grpc.address"), grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})))
 	if err != nil {
