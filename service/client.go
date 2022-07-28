@@ -2,19 +2,20 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/websocket"
-	"log"
+	"webSocket-be/config"
 	"webSocket-be/model"
 )
 
 type Client struct {
 	Socket     *websocket.Conn
 	Text       chan []byte
-	User       model.User // 发送者信息
-	ReceiverId string     // 接收者id
+	User       *model.User // 发送者信息
+	ReceiverId string      // 接收者id
 }
 
-func (c *Client) Read(manager *ClientManager) {
+func (c *Client) Write(manager *ClientManager) {
 	defer c.Unregister(manager)
 	for {
 		c.Socket.PongHandler()
@@ -22,26 +23,26 @@ func (c *Client) Read(manager *ClientManager) {
 		case message := <-c.Text:
 			err := c.Socket.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
-				log.Println("发送消息错误: ", err)
+				config.Logfile.Println(fmt.Errorf("user %s send message err: %w", c.User.Id, err))
 				return
 			}
 		}
 	}
 }
 
-func (c *Client) Write(manager *ClientManager) {
+func (c *Client) Read(manager *ClientManager) {
 	defer c.Unregister(manager)
 	for {
 		_, msg, err := c.Socket.ReadMessage()
 		if err != nil {
-			log.Println("读取消息错误: ", err)
+			config.Logfile.Println(fmt.Errorf("user %s; read message err: %w", c.User.Id, err))
 			return
 		}
 
 		message := model.DialogMessage{}
 		err = json.Unmarshal(msg, &message)
 		if err != nil {
-			log.Println("反序列化消息失败: ", err)
+			config.Logfile.Println(fmt.Errorf("user %s; unmarshal message err: %w", c.User.Id, err))
 			return
 		}
 		manager.Broadcast <- &Broadcast{

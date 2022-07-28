@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"crypto/tls"
-	"flag"
+	"fmt"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
-	"log"
+	"webSocket-be/config"
 	"webSocket-be/model"
 	"webSocket-be/proto"
 )
@@ -22,12 +22,12 @@ func VerifyToken(token string) (*model.User, error) {
 		InsecureSkipVerify: true,
 	})))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("connect to grpc err: %w", err)
 	}
 	defer func(conn *grpc.ClientConn) {
 		err = conn.Close()
 		if err != nil {
-			log.Println(err)
+			config.Logfile.Println(fmt.Errorf("connect to grpc err: %w", err))
 			return
 		}
 	}(conn)
@@ -41,7 +41,7 @@ func VerifyToken(token string) (*model.User, error) {
 	stringWrap := &proto.StringWrap{Val: token}
 	user, err := userClient.VerifyToken(ctx, stringWrap)
 	if err != nil {
-		log.Println("grpc verify token err: " + err.Error())
+		config.Logfile.Println(fmt.Errorf("grpc verify token err: %w", err))
 		return GetUserByToken(token)
 	}
 

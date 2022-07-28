@@ -1,8 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
-	"log"
+	"webSocket-be/config"
 	"webSocket-be/model"
 	"webSocket-be/route"
 	"webSocket-be/service"
@@ -12,7 +13,7 @@ func main() {
 
 	err := Init()
 	if err != nil {
-		log.Println(err.Error())
+		config.Logfile.Println(err)
 		panic(err)
 	}
 
@@ -32,13 +33,14 @@ func Init() error {
 	viper.AddConfigPath("config")
 	err := viper.ReadInConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("viper read config err: %w", err)
 	}
+
+	config.InitLogger("./config/err.txt")
 
 	err = model.InitRedis()
 	if err != nil {
-		log.Println(err.Error())
-		return err
+		return fmt.Errorf("init redis err: %w", err)
 	}
 
 	return nil

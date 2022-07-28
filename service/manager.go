@@ -2,9 +2,10 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"sync"
+	"webSocket-be/config"
 	"webSocket-be/model"
 )
 
@@ -60,7 +61,7 @@ func (manager *ClientManager) Start() {
 				manager.Hubs.Delete(client.User.Id)
 				err := client.Socket.Close()
 				if err != nil {
-					log.Println("关闭 socket 连接错误: ", err)
+					config.Logfile.Println(fmt.Errorf("close socket connection err: %w", err))
 				}
 				close(client.Text)
 			}
@@ -69,7 +70,7 @@ func (manager *ClientManager) Start() {
 
 			message, err := json.Marshal(broadcast.Message)
 			if err != nil {
-				log.Println(broadcast.Client.User.Id+" json.Marshal error: ", err)
+				config.Logfile.Println(fmt.Errorf("marshal message err: %w", err))
 				continue
 			}
 
@@ -84,11 +85,11 @@ func (manager *ClientManager) Start() {
 			if !online {
 				err = model.ZAddWithContext(broadcast.Client.ReceiverId, broadcast.Message)
 				if err != nil {
-					log.Println("ZAddWithContext error: ", err)
+					config.Logfile.Println(fmt.Errorf("ZAddWithContext failed err: %w", err))
 				}
 				err = model.NewJPush(broadcast.Message.User.Name, broadcast.Message.Text, []string{broadcast.Client.ReceiverId}).POST()
 				if err != nil {
-					log.Println("JPush error: ", err)
+					config.Logfile.Println(fmt.Errorf("JPush failed err: %w", err))
 				}
 			}
 

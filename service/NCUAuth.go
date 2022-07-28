@@ -4,7 +4,6 @@ import (
 	"github.com/tidwall/gjson"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"webSocket-be/model"
 )
@@ -18,7 +17,6 @@ func GetUserByToken(token string) (*model.User, error) {
 
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	req.Header.Add("Accept", "application/json")
@@ -26,19 +24,14 @@ func GetUserByToken(token string) (*model.User, error) {
 
 	res, err := (&http.Client{}).Do(req)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	defer func(Body io.ReadCloser) {
-		err1 := Body.Close()
-		if err1 != nil {
-
-		}
+		_ = Body.Close()
 	}(res.Body)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 

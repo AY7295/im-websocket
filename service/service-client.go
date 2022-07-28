@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -19,6 +21,7 @@ func VerifyRequest(receiverId, token string, c *gin.Context) (*Client, error) {
 		},
 	}).Upgrade(c.Writer, c.Request, nil) // 升级成ws协议
 	if err != nil {
+		config.Logfile.Println(fmt.Errorf("setup websocket connection err: %w", err))
 		http.NotFound(c.Writer, c.Request)
 		return nil, err
 	}
@@ -26,7 +29,7 @@ func VerifyRequest(receiverId, token string, c *gin.Context) (*Client, error) {
 	return &Client{
 		Socket:     conn,
 		Text:       make(chan []byte),
-		User:       *user,
+		User:       user.(*model.User),
 		ReceiverId: receiverId,
 	}, nil
 
