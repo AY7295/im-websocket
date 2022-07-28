@@ -3,33 +3,34 @@ package route
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"webSocket-be/config"
 	"webSocket-be/service"
 )
 
 func NewRouter(m *service.ClientManager) *gin.Engine {
 	gin.SetMode(viper.GetString("utils.gin_mode"))
-	e := gin.Default()
 
-	e.GET("/ping", pong)
+	e := gin.Default()
+	e.Use(auth)
 
 	e.GET("chat", m.WS)
 
 	return e
 }
 
-func pong(c *gin.Context) {
-	token := c.Query("token")
+func auth(c *gin.Context) {
+	token := c.GetHeader("Authorization")
 	if token == "" {
-		service.SuccessResponse(c, "pong")
+		service.ErrorResponse(c, "receiver is empty")
 	}
-
 	user, err := service.VerifyToken(token)
 	if err != nil {
-		service.ErrorResponse(c, err.Error())
+		config.Logfile.Println(err)
+		service.ErrorResponse(c, "bad Authorization err: "+err.Error())
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"message": user,
-	})
+	c.Set("user", user)
+	c.Next()
+
 }
