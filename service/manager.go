@@ -28,16 +28,15 @@ func NewManager() *ClientManager {
 
 func (manager *ClientManager) WS(c *gin.Context) {
 
-	receiverId := c.Query("receiver")
-	token := c.GetHeader("Authorization")
-	if token == "" || receiverId == "" {
-		ErrorResponse(c, "receiverId or token is empty")
+	receiver := c.Query("receiver")
+	if receiver == "" {
+		ErrorResponse(c, "receiver is empty")
 		return
 	}
 
-	client, err := VerifyRequest(receiverId, token, c)
+	client, err := NewClient(receiver, c)
 	if err != nil {
-		ErrorResponse(c, err.Error())
+		ErrorResponse(c, "server err: "+err.Error())
 		return
 	}
 

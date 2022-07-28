@@ -6,13 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"webSocket-be/config"
+	"webSocket-be/model"
 )
 
-func VerifyRequest(receiverId, token string, c *gin.Context) (*Client, error) {
+func NewClient(receiverId string, c *gin.Context) (*Client, error) {
 
-	user, err := VerifyToken(token)
-	if err != nil {
-		return nil, err
+	user, ok := c.Get("user")
+	if !ok {
+		return nil, errors.New("bad Authorization")
 	}
 
 	conn, err := (&websocket.Upgrader{
